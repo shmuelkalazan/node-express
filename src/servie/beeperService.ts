@@ -41,49 +41,40 @@ export class BepperService{
 
     public static async UpdateStatusBeeper(beeper:Beeper):Promise<boolean |undefined>{ 
         try {
-            // console.log(beeper.longitude)
-            let checked :boolean = false
             const beepers:Beeper[]|null = await getFileData() as Beeper[] 
             const oneBeeper :Beeper|undefined =  beepers.find(b => b.id == beeper.id)
             if (oneBeeper){
-                let updatedPeeper :Beeper = {...oneBeeper}
-                // console.log(updatedPeeper);
-                // console.log(beeper.status);                
+                let updatedBeeper :Beeper = {...oneBeeper}                
                 switch (beeper.status) {
                     case "assembled":
                         if (oneBeeper.status == "manufactured"){
-                        updatedPeeper.status = "assembled"
-                        checked = true
-                        // console.log("iam in 77");
+                            updatedBeeper.status = "assembled"
                     } 
                     break;
                 case "shipped":
-                    // console.log("iam in 6");
                     if (oneBeeper.status == "assembled"){
-                        updatedPeeper.status = "shipped"
-                        checked = true
-                        // console.log("iam in 66");
-                    } 
-                                           
+                        updatedBeeper.status = "shipped"
+                    }                                 
                     break;
                 case "deployed":
-                    if (oneBeeper.status == "shipped"){                        
-                        updatedPeeper.status = "deployed"
-                        updatedPeeper.latitued = beeper.latitued
-                        updatedPeeper.longitude = beeper.longitude 
-                        checked = true  
+                    if (oneBeeper.status == "shipped"){ 
+                        const range:boolean = await this.checkrange(beeper.latitued,beeper.longitude)                        
+                        if(!range){return false}  
+                        updatedBeeper.status = "deployed"
+                        updatedBeeper.latitued = beeper.latitued
+                        updatedBeeper.longitude = beeper.longitude 
                    } 
                     break;
                 default:
                     break;
                 }
             const allBeeper :Beeper[]|undefined =  beepers.filter(b => b.id != beeper.id)
-            allBeeper.push(updatedPeeper)
+            allBeeper.push(updatedBeeper)
             await saveFileData(allBeeper)
-            if (updatedPeeper.status == "deployed"){
-                setTimeout(()=>{this.updateToFinish(beeper)}, 2000);                   
+            if (updatedBeeper.status == "deployed"){
+                setTimeout(()=>{this.updateToFinish(beeper)}, 10000);                   
             }
-            return checked
+            return true
         }            
         } catch (error) {
             return false
@@ -95,7 +86,6 @@ export class BepperService{
             const beepers:Beeper[]|null = await getFileData() as Beeper[] 
             if (beepers){
                 const allBeeper :Beeper[]|undefined =  beepers.filter(b => b.id != id)
-                console.log(allBeeper)
                 await saveFileData(allBeeper)         
             }
             return true
@@ -113,9 +103,7 @@ export class BepperService{
         return null
     }
 
-    public static async updateToFinish(beeper :Beeper){
-        console.log("in");
-        
+    public static async updateToFinish(beeper :Beeper){        
         try {   
             const beepers:Beeper[]|null = await getFileData() as Beeper[] 
             if (beepers){
@@ -132,5 +120,11 @@ export class BepperService{
         } catch (error) {
             return false
         }  
-     }
+    }
+    public static async checkrange(lat: number, lon: number): Promise<boolean>{
+        const latitued: boolean = lat > 33.01048 && lat < 34.6793
+        const longitude: boolean = lon > 35.04438 && lon < 36.59793
+        return latitued && longitude
+    }
+
 }

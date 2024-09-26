@@ -2,7 +2,6 @@ import exp ,{Request, Response, Router} from 'express'
 import newBeeperDto from '../dto/newBeeperDto'
 import { BepperService } from '../servie/beeperService'
 import Beeper from '../models/beeperModel'
-import { number } from 'zod'
 const router:Router = exp.Router()
 
 //create new
@@ -67,7 +66,7 @@ router.post('/:id/status' , async (req:Request, res: Response): Promise<void> =>
         let beeper :Beeper = req.body
         beeper.id = Number(req.params.id)
         const resulte = await BepperService.UpdateStatusBeeper(beeper)
-        if(resulte){res.json(resulte)}
+        if(resulte){res.json("the beeper updated sccsfuly")}
         else{
             throw new Error('can t find beepers from the file')
         }
@@ -79,7 +78,6 @@ router.post('/:id/status' , async (req:Request, res: Response): Promise<void> =>
         })
     }
 })
-
 //get all bay status
 router.get('/status/:status' , async (req:Request, res: Response): Promise<void> =>{
     console.log(req.params.status);
@@ -98,7 +96,7 @@ router.get('/status/:status' , async (req:Request, res: Response): Promise<void>
         })
     }
 })
-
+//delete by id
 router.delete('/:id' , async (req:Request, res: Response): Promise<void> =>{
     try {        
         const resulte = await BepperService.DeleteBeeperById(Number(req.params.id))
@@ -115,6 +113,5 @@ router.delete('/:id' , async (req:Request, res: Response): Promise<void> =>{
         })
     }
 })
-
 
 export default router
