@@ -45,11 +45,9 @@ router.get('/' , async (req:Request, res: Response): Promise<void> =>{
     }
 })
 //get by id
-router.get('/' , async (req:Request, res: Response): Promise<void> =>{
-    try {
-        console.log(req.query);
-        
-        const resulte = await BepperService.GetBeeperById(Number(req.query.title))
+router.get('/:id' , async (req:Request, res: Response): Promise<void> =>{
+    try {        
+        const resulte = await BepperService.GetBeeperById(Number(req.params.id))
         if(resulte){res.json(resulte)}
         else{
             throw new Error('can t get beeper from the file')
@@ -63,9 +61,9 @@ router.get('/' , async (req:Request, res: Response): Promise<void> =>{
     }
 })
 //update status
-router.get('/stasus' , async (req:Request, res: Response): Promise<void> =>{
+router.post('/:id/stasus' , async (req:Request, res: Response): Promise<void> =>{
     try {
-        const resulte = await BepperService.GetBeeperById(Number(req.query.title))
+        const resulte = await BepperService.GetBeeperById(Number(req.params.id))
         if(resulte){res.json(resulte)}
         else{
             throw new Error('can t get beepers from the file')
@@ -78,4 +76,42 @@ router.get('/stasus' , async (req:Request, res: Response): Promise<void> =>{
         })
     }
 })
+
+//get all bay status
+router.get('/status/:status' , async (req:Request, res: Response): Promise<void> =>{
+    console.log(req.params.status);
+    try {
+        
+        const resulte:Beeper[] |null = await BepperService.GetBeepersByStatus(req.params.status)
+        if(resulte){res.json(resulte)}
+        else{
+            throw new Error('can t get beepers from the file')
+        }
+    } catch (error) {
+        res.status(400).json({
+            err:true,
+            massage:error || 'no gooood',
+            data:null
+        })
+    }
+})
+
+router.delete('/:id' , async (req:Request, res: Response): Promise<void> =>{
+    try {        
+        const resulte = await BepperService.DeleteBeeperById(Number(req.params.id))
+        if(resulte){
+            res.status(200).json({
+                err:false,
+                massage:'gooood',
+            })}
+        }catch (error) {
+        res.status(400).json({
+            err:true,
+            massage:error || 'no gooood',
+            data:null
+        })
+    }
+})
+
+
 export default router

@@ -56,4 +56,28 @@ export class BepperService{
             return false
         }
     }
+
+    public static async DeleteBeeperById(id:number):Promise<boolean>{
+        try {   
+            const beepers:Beeper[]|null = await getFileData() as Beeper[] 
+            if (beepers){
+                const allBeeper :Beeper[]|undefined =  beepers.filter(b => b.id != id)
+                console.log(allBeeper)
+                await saveFileData(allBeeper)         
+            }
+            return true
+        } catch (error) {
+            return false
+        }  
+    }
+    
+    
+    public static async GetBeepersByStatus(status:string):Promise<Beeper[]|null>{  
+        const beepers:Beeper[]|null = await getFileData() as Beeper[] 
+        const filterBeepers :Beeper[]|undefined =  beepers.filter(b => b.status == status) 
+        if (filterBeepers){
+            return filterBeepers
+        }   
+        return null
+    }
 }
