@@ -2,6 +2,7 @@ import exp ,{Request, Response, Router} from 'express'
 import newBeeperDto from '../dto/newBeeperDto'
 import { BepperService } from '../servie/beeperService'
 import Beeper from '../models/beeperModel'
+import { number } from 'zod'
 const router:Router = exp.Router()
 
 //create new
@@ -61,17 +62,19 @@ router.get('/:id' , async (req:Request, res: Response): Promise<void> =>{
     }
 })
 //update status
-router.post('/:id/stasus' , async (req:Request, res: Response): Promise<void> =>{
+router.post('/:id/status' , async (req:Request, res: Response): Promise<void> =>{
     try {
-        const resulte = await BepperService.GetBeeperById(Number(req.params.id))
+        let beeper :Beeper = req.body
+        beeper.id = Number(req.params.id)
+        const resulte = await BepperService.UpdateStatusBeeper(beeper)
         if(resulte){res.json(resulte)}
         else{
-            throw new Error('can t get beepers from the file')
+            throw new Error('can t find beepers from the file')
         }
     } catch (error) {
         res.status(400).json({
             err:true,
-            massage:error || 'no gooood',
+            massage:error || 'not found',
             data:null
         })
     }
@@ -90,7 +93,7 @@ router.get('/status/:status' , async (req:Request, res: Response): Promise<void>
     } catch (error) {
         res.status(400).json({
             err:true,
-            massage:error || 'no gooood',
+            massage:error || 'non found',
             data:null
         })
     }

@@ -39,19 +39,52 @@ export class BepperService{
         return null
     } 
 
-    public static async UpdateStatusBeeper(id:number):Promise<boolean>{ 
+    public static async UpdateStatusBeeper(beeper:Beeper):Promise<boolean |undefined>{ 
         try {
+            // console.log(beeper.longitude)
+            let checked :boolean = false
             const beepers:Beeper[]|null = await getFileData() as Beeper[] 
-            const oneBeeper :Beeper|undefined =  beepers.find(b => b.id == id)  
-            // if (oneBeeper){
-            //     return oneBeeper
-            // }            
-            // const beeper :Beeper = new Beeper(
-            //     name,"manufactured",0,0,"")    
-            // if (!beepers) beepers = []
-            // beepers.push(beeper)
-            // await saveFileData(beepers)
-            return true
+            const oneBeeper :Beeper|undefined =  beepers.find(b => b.id == beeper.id)
+            if (oneBeeper){
+                let updatedPeeper :Beeper = {...oneBeeper}
+                // console.log(updatedPeeper);
+                // console.log(beeper.status);                
+                switch (beeper.status) {
+                    case "assembled":
+                        if (oneBeeper.status == "manufactured"){
+                        updatedPeeper.status = "assembled"
+                        checked = true
+                        // console.log("iam in 77");
+                    } 
+                    break;
+                case "shipped":
+                    // console.log("iam in 6");
+                    if (oneBeeper.status == "assembled"){
+                        updatedPeeper.status = "shipped"
+                        checked = true
+                        // console.log("iam in 66");
+                    } 
+                                           
+                    break;
+                case "deployed":
+                    if (oneBeeper.status == "shipped"){                        
+                        updatedPeeper.status = "deployed"
+                        updatedPeeper.latitued = beeper.latitued
+                        updatedPeeper.longitude = beeper.longitude 
+                        checked = true  
+                   } 
+                    break;
+                default:
+                    break;
+                }
+            const allBeeper :Beeper[]|undefined =  beepers.filter(b => b.id != beeper.id)
+            allBeeper.push(updatedPeeper)
+            await saveFileData(allBeeper)
+            if (updatedPeeper.status == "deployed"){
+                setTimeout(()=>{this.updateToFinish(beeper)}, 2000);                   
+            }
+            return checked
+        }            
         } catch (error) {
             return false
         }
@@ -71,7 +104,6 @@ export class BepperService{
         }  
     }
     
-    
     public static async GetBeepersByStatus(status:string):Promise<Beeper[]|null>{  
         const beepers:Beeper[]|null = await getFileData() as Beeper[] 
         const filterBeepers :Beeper[]|undefined =  beepers.filter(b => b.status == status) 
@@ -80,4 +112,25 @@ export class BepperService{
         }   
         return null
     }
+
+    public static async updateToFinish(beeper :Beeper){
+        console.log("in");
+        
+        try {   
+            const beepers:Beeper[]|null = await getFileData() as Beeper[] 
+            if (beepers){
+                const allBeeper :Beeper[]|undefined =  beepers.filter(b => b.id != beeper.id)
+                if(allBeeper){
+                    let updatedPeeper :Beeper = {...beeper}
+                    updatedPeeper.status = "detonated" 
+                    updatedPeeper.detonated = new Date().toString()
+                    allBeeper.push(updatedPeeper)
+                    await saveFileData(allBeeper)  
+                }
+            }
+            return true
+        } catch (error) {
+            return false
+        }  
+     }
 }
